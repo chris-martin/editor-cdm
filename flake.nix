@@ -9,7 +9,7 @@
       nixpkgsArgs = { inherit system; config = { }; };
       nixpkgs = import inputs.stable nixpkgsArgs;
       plugins = inputs.plugins.packages.${system};
-      editor-cdm = nixpkgs.neovim.override {
+      neovim = nixpkgs.neovim.override {
         configure = {
           customRC = import ./vimrc.nix { inherit (nixpkgs) writeText nodejs; };
           packages.myPlugins = let p = nixpkgs.vimPlugins; in {
@@ -21,11 +21,18 @@
           };
         };
       };
+      editor-cdm = nixpkgs.writeShellApplication {
+        name = "editor-cdm";
+        runtimeInputs = [ neovim ];
+        text = ''
+          nvim "$@"
+        '';
+      };
     in
     rec {
       packages = {
         default = editor-cdm;
-        inherit editor-cdm;
+        inherit editor-cdm neovim;
       };
     });
 }
